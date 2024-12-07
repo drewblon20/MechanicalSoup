@@ -1,0 +1,54 @@
+# I am trying to create a API using PyCharm to automate information from this page on the Bureau of Labor Statistics on Accounting and Auditor, the information I want is in the summary box. Here is the code I have can someone help me...
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# URL of the BLS Accountants and Auditors page
+url = "https://www.bls.gov/ooh/business-and-financial/accountants-and-auditors.htm"
+
+
+def scrape_with_selenium():
+    # Update the Chrome binary path to match your system
+    options = Options()
+    options.binary_location = "C:/Program Files/Google/Chrome/Application/chrome.exe"  # Replace with your correct path
+
+    # Initialize driver globally
+    driver = None
+    try:
+        # Initialize Selenium WebDriver
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver.get(url)
+
+        # Explicit wait until the median pay heading is loaded
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, "//h3[contains(text(),'2023 Median Pay')]"))
+        )
+
+        # Locate and extract the 2023 Median Pay section using an updated XPath
+        try:
+            # XPath to directly target the median pay text
+            median_pay = driver.find_element(By.XPATH, "//h3[contains(text(),'2023 Median Pay')]/following-sibling::p")
+            # Print the result from the found element
+            print("Median Pay (Selenium):")
+            print(median_pay.text)
+        except NoSuchElementException:
+            print("Median Pay section not found (Selenium).")
+    except WebDriverException as e:
+        print(f"WebDriver error: {e}")
+    except Exception as e:
+        print(f"Error with Selenium: {e}")
+    finally:
+        # Ensure driver.quit() is called only if driver is initialized
+        if driver:
+            driver.quit()
+
+
+# Call the Selenium scraper
+print("Running Selenium Method...")
+scrape_with_selenium()
